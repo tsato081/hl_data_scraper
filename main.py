@@ -89,7 +89,8 @@ class HyperliquidDataScraper:
             # データマネージャーを初期化
             self.data_manager = HyperliquidDataManager(
                 coin=self.coin,
-                use_testnet=self.testnet
+                use_testnet=self.testnet,
+                use_s3=self.use_s3
             )
             self.is_running = True
             
@@ -151,7 +152,7 @@ class HyperliquidDataScraper:
                 # S3ステータス
                 if self.use_s3:
                     s3_stats = status.get('s3_stats', {})
-                    if s3_stats.get('available', False):
+                    if s3_stats and s3_stats.get('available', False):
                         self.logger.info("S3ストレージ:")
                         self.logger.info(f"  バケット: {s3_stats.get('bucket_name', 'N/A')}")
                         self.logger.info(f"  総ファイル数: {s3_stats.get('total_files', 0):,}")
@@ -161,6 +162,8 @@ class HyperliquidDataScraper:
                             self.logger.info(f"  最終更新: {s3_stats['latest_file']['last_modified']}")
                     else:
                         self.logger.warning(f"S3ストレージ: 利用不可 ({s3_stats.get('error', '不明なエラー')})")
+                else:
+                    self.logger.info("S3ストレージ: 無効")
                 
                 # CSVファイル統計
                 csv_stats = status.get('csv_stats', {})

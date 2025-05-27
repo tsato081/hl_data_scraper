@@ -17,7 +17,7 @@ class HyperliquidDataManager:
     WebSocketとREST APIからのデータを統合管理し、CSVファイルに書き込む
     """
     
-    def __init__(self, coin: str = config.BTC_COIN, use_testnet: bool = False):
+    def __init__(self, coin: str = config.BTC_COIN, use_testnet: bool = False, use_s3: bool = None):
         self.coin = coin
         self.use_testnet = use_testnet
         self.logger = logging.getLogger(__name__)
@@ -32,7 +32,8 @@ class HyperliquidDataManager:
         self.csv_writer = CSVWriter()
         
         # S3クライアントの初期化
-        self.s3_client = S3Client() if config.USE_S3 else None
+        self.use_s3 = config.USE_S3 if use_s3 is None else use_s3
+        self.s3_client = S3Client() if self.use_s3 else None
         
         # 状態管理
         self.is_running = False
@@ -67,7 +68,7 @@ class HyperliquidDataManager:
         self.rest_thread.start()
         
         # S3アップロードスレッドを開始
-        if self.s3_client and self.s3_client.is_available():
+        if self.use_s3 and self.s3_client and self.s3_client.is_available():
             self.s3_thread = threading.Thread(target=self._s3_upload_loop)
             self.s3_thread.daemon = True
             self.s3_thread.start()
@@ -192,7 +193,7 @@ class HyperliquidDataManager:
     
     def _s3_upload_loop(self):
         """S3への定期的なアップロード"""
-        while self.is_running:
+        while self.is_running and self.use_s3 and self.s3_client and self.s3_client.is_available():
             try:
                 current_time = time.time()
                 
