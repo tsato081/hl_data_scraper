@@ -1,6 +1,115 @@
-# Hyperliquid Data Scraper - Docker デプロイメントガイド
+# Hyperliquid Data Scraper Docker デプロイメントガイド
 
-このドキュメントでは、Hyperliquid Data ScraperをDockerを使用してデプロイする方法について説明します。
+## 必要条件
+
+- Docker 20.10以上
+- Docker Compose 2.0以上
+- サポートOS:
+  - Amazon Linux 2
+  - Ubuntu 20.04以上
+
+## クイックスタート
+
+1. リポジトリをクローン
+```bash
+git clone https://github.com/yourusername/hyperliquid-data-scraper.git
+cd hyperliquid-data-scraper
+```
+
+2. 環境変数を設定（オプション）
+```bash
+# .envファイルを作成
+cp .env.example .env
+
+# 必要に応じて.envファイルを編集
+nano .env
+```
+
+3. Docker Composeで起動
+```bash
+docker-compose up -d
+```
+
+## 環境変数
+
+以下の環境変数を設定できます：
+
+- `USE_S3`: S3アップロードを有効化（true/false）
+- `S3_BUCKET_NAME`: S3バケット名
+- `AWS_ACCESS_KEY_ID`: AWSアクセスキー
+- `AWS_SECRET_ACCESS_KEY`: AWSシークレットキー
+- `AWS_DEFAULT_REGION`: AWSリージョン
+
+## ログの確認
+
+```bash
+# コンテナのログを表示
+docker-compose logs -f
+
+# 特定のコンテナのログを表示
+docker-compose logs -f hyperliquid-scraper
+```
+
+## コンテナの停止
+
+```bash
+docker-compose down
+```
+
+## データの永続化
+
+- `./data`: CSVファイルの保存ディレクトリ
+- `./logs`: ログファイルの保存ディレクトリ
+
+## ヘルスチェック
+
+コンテナの健全性は定期的にチェックされます：
+
+```bash
+# ヘルスチェックの状態を確認
+docker inspect --format='{{.State.Health.Status}}' hyperliquid-scraper
+```
+
+## トラブルシューティング
+
+1. コンテナが起動しない場合
+```bash
+# ログを確認
+docker-compose logs
+
+# コンテナの状態を確認
+docker-compose ps
+```
+
+2. S3アップロードが失敗する場合
+- AWS認証情報が正しく設定されているか確認
+- S3バケットが存在し、アクセス権限があるか確認
+
+3. メモリ使用量が高い場合
+- `docker-compose.yml`のメモリ制限を調整
+- 不要なログファイルを削除
+
+## メンテナンス
+
+### ログローテーション
+
+ログファイルは自動的にローテーションされます：
+- 最大サイズ: 100MB
+- 保持数: 5ファイル
+
+### データバックアップ
+
+定期的なバックアップを推奨：
+```bash
+# データディレクトリをバックアップ
+tar -czf backup.tar.gz ./data
+```
+
+## セキュリティ
+
+- AWS認証情報は環境変数で管理
+- コンテナは非rootユーザーで実行
+- 不要なポートは公開しない
 
 ## 📋 前提条件
 

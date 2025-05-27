@@ -6,10 +6,6 @@ import os
 WEBSOCKET_URL = "wss://api.hyperliquid.xyz/ws"
 HTTPS_BASE_URL = "https://api.hyperliquid.xyz"
 
-# Testnet URLs (for testing)
-TESTNET_WEBSOCKET_URL = "wss://api.hyperliquid-testnet.xyz/ws"
-TESTNET_HTTPS_BASE_URL = "https://api.hyperliquid-testnet.xyz"
-
 # Coin settings
 BTC_COIN = "BTC"  # BTCパーペチュアルの識別子
 

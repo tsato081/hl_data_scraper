@@ -14,26 +14,22 @@ from datetime import datetime
 import config
 from data_manager import HyperliquidDataManager
 
-class HyperliquidDataScraper:
+class HyperliquidScraper:
     """
-    Hyperliquidデータスクレイパーメインクラス
+    Hyperliquid Data Scraper
+    BTCのデータをリアルタイムで取得し、CSVファイルに保存する
     """
     
-    def __init__(self, coin: str = config.BTC_COIN, testnet: bool = False, use_s3: bool = None):
+    def __init__(self, coin: str = config.BTC_COIN, use_s3: bool = None):
         self.coin = coin
-        self.testnet = testnet
-        self.use_s3 = use_s3 if use_s3 is not None else config.USE_S3
-        self.data_manager = None
-        self.is_running = False
-        
-        # ログ設定
-        self._setup_logging()
-        
-        # シグナルハンドラー設定
-        self._setup_signal_handlers()
-        
         self.logger = logging.getLogger(__name__)
-    
+        
+        # データマネージャーの初期化
+        self.data_manager = HyperliquidDataManager(
+            coin=self.coin,
+            use_s3=use_s3
+        )
+
     def _setup_logging(self):
         """ログ設定を初期化"""
         # ログレベル設定
@@ -78,7 +74,6 @@ class HyperliquidDataScraper:
             self.logger.info("=" * 60)
             self.logger.info("Hyperliquid Data Scraper を開始します")
             self.logger.info(f"対象通貨: {self.coin}")
-            self.logger.info(f"テストネット: {'有効' if self.testnet else '無効'}")
             self.logger.info(f"S3ストレージ: {'有効' if self.use_s3 else '無効'}")
             if self.use_s3:
                 self.logger.info(f"S3バケット: {config.S3_BUCKET_NAME}")
@@ -89,7 +84,6 @@ class HyperliquidDataScraper:
             # データマネージャーを初期化
             self.data_manager = HyperliquidDataManager(
                 coin=self.coin,
-                use_testnet=self.testnet,
                 use_s3=self.use_s3
             )
             self.is_running = True
@@ -188,82 +182,31 @@ class HyperliquidDataScraper:
             self.logger.error(f"ステータス出力エラー: {e}")
 
 
-def parse_arguments():
-    """コマンドライン引数を解析"""
-    parser = argparse.ArgumentParser(
-        description="Hyperliquid Data Scraper - BTCパーペチュアルデータ収集ツール"
-    )
-    
+def main():
+    """メイン関数"""
+    # コマンドライン引数の解析
+    parser = argparse.ArgumentParser(description="Hyperliquid Data Scraper")
     parser.add_argument(
         "--coin", "-c",
+        type=str,
         default=config.BTC_COIN,
-        help=f"対象通貨シンボル (デフォルト: {config.BTC_COIN})"
+        help="対象のコイン（デフォルト: BTC）"
     )
-    
-    parser.add_argument(
-        "--testnet", "-t",
-        action="store_true",
-        help="テストネットを使用する"
-    )
-    
     parser.add_argument(
         "--s3", "-s",
         action="store_true",
-        help="S3ストレージを使用する"
+        help="S3へのアップロードを有効化"
+    )
+    args = parser.parse_args()
+    
+    # アプリケーションの初期化
+    app = HyperliquidScraper(
+        coin=args.coin,
+        use_s3=args.s3
     )
     
-    parser.add_argument(
-        "--no-s3",
-        action="store_true",
-        help="S3ストレージを使用しない"
-    )
-    
-    parser.add_argument(
-        "--log-level", "-l",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-        default=config.LOG_LEVEL,
-        help=f"ログレベル (デフォルト: {config.LOG_LEVEL})"
-    )
-    
-    parser.add_argument(
-        "--version", "-v",
-        action="version",
-        version="Hyperliquid Data Scraper 1.0.0"
-    )
-    
-    return parser.parse_args()
-
-
-async def main():
-    """メイン関数"""
-    try:
-        # コマンドライン引数を解析
-        args = parse_arguments()
-        
-        # ログレベルを更新
-        config.LOG_LEVEL = args.log_level
-        
-        # S3使用設定を更新
-        use_s3 = None
-        if args.s3:
-            use_s3 = True
-        elif args.no_s3:
-            use_s3 = False
-        
-        # アプリケーションを作成・実行
-        scraper = HyperliquidDataScraper(
-            coin=args.coin,
-            testnet=args.testnet,
-            use_s3=use_s3
-        )
-        
-        await scraper.start()
-        
-    except KeyboardInterrupt:
-        print("\nユーザーによる停止要求を受信しました")
-    except Exception as e:
-        print(f"予期しないエラーが発生しました: {e}")
-        sys.exit(1)
+    # アプリケーションの実行
+    asyncio.run(app.start())
 
 
 if __name__ == "__main__":
@@ -272,4 +215,4 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
     
     # メイン関数を実行
-    asyncio.run(main()) 
+    main() 

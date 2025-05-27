@@ -1,43 +1,38 @@
 # Hyperliquid Data Scraper
 
-HyperliquidのBTCパーペチュアル契約から以下のデータをリアルタイムで取得し、CSVファイルに保存するPythonアプリケーションです。
+HyperliquidからBTCのデータをリアルタイムで取得し、CSVファイルに保存するPythonアプリケーション
 
-## 取得データ
+## 機能
 
-- **トレードデータ**: 各取引の詳細情報（価格、数量、時刻等）
-- **板情報 (L2 Book)**: リアルタイムの注文板情報
-- **ファンディングレート**: パーペチュアル契約のファンディングレート
-- **オープンインタレスト**: 未決済建玉情報
+- BTCのリアルタイムデータ収集
+  - トレードデータ
+  - 板情報
+  - ファンディングレート
+  - オープンインタレスト
+- CSVファイルへの保存
+- S3への自動アップロード（オプション）
 
-## 特徴
-
-- **リアルタイム収集**: WebSocketを使用した最小遅延でのデータ取得
-- **自動復旧**: 接続断時の自動再接続機能
-- **CSV出力**: 解析しやすいCSV形式でのデータ保存
-- **ログ管理**: 詳細なログ出力とファイル保存
-- **統計情報**: 定期的なデータ収集状況の報告
-
-## 必要な環境
+## 必要条件
 
 - Python 3.8以上
-- インターネット接続
+- pip（Pythonパッケージマネージャー）
 
 ## インストール
 
-1. **リポジトリのクローン**
+1. リポジトリをクローン
 ```bash
-git clone <repository-url>
-cd HL_Data_Scraper
+git clone https://github.com/yourusername/hyperliquid-data-scraper.git
+cd hyperliquid-data-scraper
 ```
 
-2. **依存関係のインストール**
+2. 依存パッケージをインストール
 ```bash
 pip install -r requirements.txt
 ```
 
 ## 使用方法
 
-### 基本実行
+### 基本的な使用方法
 
 ```bash
 python main.py
@@ -45,29 +40,17 @@ python main.py
 
 ### コマンドラインオプション
 
-```bash
-python main.py --help
-```
+- `--coin, -c`: 対象のコイン（デフォルト: BTC）
+- `--s3, -s`: S3へのアップロードを有効化
 
-- `--coin, -c`: 対象通貨シンボル（デフォルト: BTC）
-- `--testnet, -t`: テストネットを使用
-- `--log-level, -l`: ログレベル（DEBUG, INFO, WARNING, ERROR）
-- `--version, -v`: バージョン情報を表示
-
-### 実行例
+### 例
 
 ```bash
-# デフォルト設定でBTCデータを収集
+# デフォルト設定で実行
 python main.py
 
-# デバッグモードで実行
-python main.py --log-level DEBUG
-
-# テストネットで実行
-python main.py --testnet
-
-# 異なる通貨を指定（例: ETH）
-python main.py --coin ETH
+# S3アップロードを有効化
+python main.py --s3
 ```
 
 ## 出力ファイル

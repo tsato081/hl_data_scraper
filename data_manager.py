@@ -17,17 +17,14 @@ class HyperliquidDataManager:
     WebSocketとREST APIからのデータを統合管理し、CSVファイルに書き込む
     """
     
-    def __init__(self, coin: str = config.BTC_COIN, use_testnet: bool = False, use_s3: bool = None):
+    def __init__(self, coin: str = config.BTC_COIN, use_s3: bool = None):
         self.coin = coin
-        self.use_testnet = use_testnet
         self.logger = logging.getLogger(__name__)
         
         # クライアントとライター
-        self.ws_client = HyperliquidWebSocketClient(
-            use_testnet=use_testnet
-        )
+        self.ws_client = HyperliquidWebSocketClient()
         self.rest_client = HyperliquidRestClient(
-            base_url=config.TESTNET_HTTPS_BASE_URL if use_testnet else config.HTTPS_BASE_URL
+            base_url=config.HTTPS_BASE_URL
         )
         self.csv_writer = CSVWriter()
         
@@ -273,7 +270,6 @@ class HyperliquidDataManager:
         return {
             "is_running": self.is_running,
             "coin": self.coin,
-            "use_testnet": self.use_testnet,
             "websocket_connected": self.ws_client.is_connected if self.ws_client else False,
             "s3_available": self.s3_client.is_available() if self.s3_client else False,
             "last_funding_rate_update": datetime.fromtimestamp(self.last_funding_rate_update).isoformat() if self.last_funding_rate_update else None,
