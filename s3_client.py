@@ -37,7 +37,9 @@ class S3Client:
             credentials = session.get_credentials()
             
             if not credentials:
-                raise NoCredentialsError("AWS認証情報が設定されていません")
+                self.logger.warning("AWS認証情報が設定されていません。S3機能は無効化されます。")
+                self.s3_client = None
+                return
             
             # S3クライアントの作成
             self.s3_client = boto3.client('s3', region_name=self.region)
@@ -47,12 +49,13 @@ class S3Client:
                 self.logger.info(f"S3クライアントを初期化しました: {self.bucket_name}")
             else:
                 self.logger.warning(f"S3バケットが存在しないか、アクセスできません: {self.bucket_name}")
+                self.s3_client = None
                 
         except NoCredentialsError as e:
-            self.logger.error(f"AWS認証エラー: {e}")
+            self.logger.warning(f"AWS認証エラー: {e}")
             self.s3_client = None
         except Exception as e:
-            self.logger.error(f"S3クライアント初期化エラー: {e}")
+            self.logger.warning(f"S3クライアント初期化エラー: {e}")
             self.s3_client = None
     
     def _check_bucket_exists(self) -> bool:

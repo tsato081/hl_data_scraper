@@ -33,7 +33,16 @@ class HyperliquidDataManager:
         
         # S3クライアントの初期化
         self.use_s3 = config.USE_S3 if use_s3 is None else use_s3
-        self.s3_client = S3Client() if self.use_s3 else None
+        self.s3_client = None
+        if self.use_s3:
+            try:
+                self.s3_client = S3Client()
+                if not self.s3_client.is_available():
+                    self.logger.warning("S3クライアントの初期化に失敗しました。S3機能は無効化されます。")
+                    self.s3_client = None
+            except Exception as e:
+                self.logger.warning(f"S3クライアントの初期化中にエラーが発生しました: {e}")
+                self.s3_client = None
         
         # 状態管理
         self.is_running = False

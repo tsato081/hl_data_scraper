@@ -1,5 +1,7 @@
 # Hyperliquid Data Scraper Configuration
 
+import os
+
 # Hyperliquid API URLs
 WEBSOCKET_URL = "wss://api.hyperliquid.xyz/ws"
 HTTPS_BASE_URL = "https://api.hyperliquid.xyz"
@@ -37,15 +39,15 @@ LOG_LEVEL = "INFO"
 LOG_FILE = "hyperliquid_scraper.log"
 
 # AWS S3 settings
-USE_S3 = True  # S3を使用するかどうか
-S3_BUCKET_NAME = "hyperliquid-data-bucket"  # S3バケット名（環境変数で上書き可能）
-S3_REGION = "us-east-1"  # AWSリージョン
-S3_KEY_PREFIX = "hyperliquid-data/"  # S3キープレフィックス
-S3_UPLOAD_INTERVAL = 300  # 5分間隔でS3にアップロード（秒）
+USE_S3 = os.getenv('USE_S3', 'false').lower() == 'true'  # デフォルトは無効
+S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME', 'hyperliquid-data-bucket')  # S3バケット名
+S3_REGION = os.getenv('AWS_DEFAULT_REGION', 'us-east-1')  # AWSリージョン
+S3_KEY_PREFIX = os.getenv('S3_KEY_PREFIX', 'hyperliquid-data/')  # S3キープレフィックス
+S3_UPLOAD_INTERVAL = int(os.getenv('S3_UPLOAD_INTERVAL', '300'))  # 5分間隔でS3にアップロード（秒）
 
 # S3アップロード設定
-S3_COMPRESS_FILES = True  # ファイルを圧縮してアップロード
-S3_BACKUP_LOCAL_FILES = True  # ローカルファイルもバックアップとして保持
+S3_COMPRESS_FILES = os.getenv('S3_COMPRESS_FILES', 'true').lower() == 'true'  # ファイルを圧縮してアップロード
+S3_BACKUP_LOCAL_FILES = os.getenv('S3_BACKUP_LOCAL_FILES', 'true').lower() == 'true'  # ローカルファイルもバックアップとして保持
 
 # CSV columns
 TRADES_COLUMNS = [
