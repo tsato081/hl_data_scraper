@@ -22,6 +22,7 @@ COPY rest_client.py .
 COPY csv_writer.py .
 COPY data_manager.py .
 COPY main.py .
+COPY s3_client.py .
 
 # dataディレクトリを作成
 RUN mkdir -p data
