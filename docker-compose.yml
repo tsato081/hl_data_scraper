@@ -3,62 +3,41 @@ version: '3.8'
 services:
   hyperliquid-scraper:
     build: .
-    container_name: hyperliquid-data-scraper
+    container_name: hyperliquid-scraper
     restart: unless-stopped
-    
-    # 環境変数
     environment:
       - PYTHONUNBUFFERED=1
       - TZ=Asia/Tokyo
-    
-    # ボリュームマウント（データ永続化）
+      - USE_S3=true
+      - S3_BUCKET_NAME=hl-data-scraper
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
-    
-    # ログ設定
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "5"
-    
-    # リソース制限
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-    
-    # ヘルスチェック
+          memory: 1G
+          cpus: '1'
     healthcheck:
       test: ["CMD", "python", "healthcheck.py"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
-    
-    # ネットワーク設定（必要に応じて）
-    # ports:
-    #   - "8080:8080"
-    
-    # ラベル（管理用）
     labels:
-      - "com.hyperliquid.service=data-scraper"
-      - "com.hyperliquid.version=1.0.0"
-      - "com.hyperliquid.description=BTC perpetual data scraper"
+      - "com.example.description=Hyperliquid Data Scraper"
+      - "com.example.service=hyperliquid-scraper"
 
-# ボリューム定義（必要に応じて名前付きボリュームを使用）
 volumes:
-  hyperliquid_data:
+  data:
     driver: local
-  hyperliquid_logs:
+  logs:
     driver: local
 
-# ネットワーク定義（必要に応じて）
 networks:
-  hyperliquid_network:
+  default:
     driver: bridge 
