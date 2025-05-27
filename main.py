@@ -20,7 +20,7 @@ class HyperliquidScraper:
     BTCのデータをリアルタイムで取得し、CSVファイルに保存する
     """
     
-    def __init__(self, coin: str = config.BTC_COIN, use_s3: bool = None, log_level: str = None):
+    def __init__(self, coin: str = config.BTC_COIN, log_level: str = None):
         self.coin = coin
         self.logger = logging.getLogger(__name__)
         
@@ -28,10 +28,10 @@ class HyperliquidScraper:
         if log_level:
             self._setup_logging(log_level)
         
-        # データマネージャーの初期化
+        # データマネージャーの初期化（常にconfig.USE_S3を使用）
         self.data_manager = HyperliquidDataManager(
             coin=self.coin,
-            use_s3=use_s3
+            use_s3=config.USE_S3
         )
 
     def _setup_logging(self, log_level: str = None):
@@ -79,8 +79,8 @@ class HyperliquidScraper:
             self.logger.info("=" * 60)
             self.logger.info("Hyperliquid Data Scraper を開始します")
             self.logger.info(f"対象通貨: {self.coin}")
-            self.logger.info(f"S3ストレージ: {'有効' if self.use_s3 else '無効'}")
-            if self.use_s3:
+            self.logger.info(f"S3ストレージ: {'有効' if config.USE_S3 else '無効'}")
+            if config.USE_S3:
                 self.logger.info(f"S3バケット: {config.S3_BUCKET_NAME}")
                 self.logger.info(f"S3リージョン: {config.S3_REGION}")
             self.logger.info(f"開始時刻: {datetime.now().isoformat()}")
@@ -89,7 +89,7 @@ class HyperliquidScraper:
             # データマネージャーを初期化
             self.data_manager = HyperliquidDataManager(
                 coin=self.coin,
-                use_s3=self.use_s3
+                use_s3=config.USE_S3
             )
             self.is_running = True
             
@@ -149,7 +149,7 @@ class HyperliquidScraper:
                 self.logger.info(f"対象通貨: {status['coin']}")
                 
                 # S3ステータス
-                if self.use_s3:
+                if config.USE_S3:
                     s3_stats = status.get('s3_stats', {})
                     if s3_stats and s3_stats.get('available', False):
                         self.logger.info("S3ストレージ:")
@@ -198,11 +198,6 @@ def main():
         help="対象のコイン（デフォルト: BTC）"
     )
     parser.add_argument(
-        "--s3", "-s",
-        action="store_true",
-        help="S3へのアップロードを有効化"
-    )
-    parser.add_argument(
         "--log-level", "-l",
         type=str,
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
@@ -214,7 +209,6 @@ def main():
     # アプリケーションの初期化
     app = HyperliquidScraper(
         coin=args.coin,
-        use_s3=args.s3,
         log_level=args.log_level
     )
     
