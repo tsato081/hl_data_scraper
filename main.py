@@ -20,9 +20,13 @@ class HyperliquidScraper:
     BTCのデータをリアルタイムで取得し、CSVファイルに保存する
     """
     
-    def __init__(self, coin: str = config.BTC_COIN, use_s3: bool = None):
+    def __init__(self, coin: str = config.BTC_COIN, use_s3: bool = None, log_level: str = None):
         self.coin = coin
         self.logger = logging.getLogger(__name__)
+        
+        # ログレベルの設定
+        if log_level:
+            self._setup_logging(log_level)
         
         # データマネージャーの初期化
         self.data_manager = HyperliquidDataManager(
@@ -30,10 +34,11 @@ class HyperliquidScraper:
             use_s3=use_s3
         )
 
-    def _setup_logging(self):
+    def _setup_logging(self, log_level: str = None):
         """ログ設定を初期化"""
         # ログレベル設定
-        log_level = getattr(logging, config.LOG_LEVEL.upper(), logging.INFO)
+        level = log_level or config.LOG_LEVEL
+        log_level = getattr(logging, level.upper(), logging.INFO)
         
         # ログフォーマット
         formatter = logging.Formatter(
@@ -197,12 +202,20 @@ def main():
         action="store_true",
         help="S3へのアップロードを有効化"
     )
+    parser.add_argument(
+        "--log-level", "-l",
+        type=str,
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        default=config.LOG_LEVEL,
+        help="ログレベル（デフォルト: INFO）"
+    )
     args = parser.parse_args()
     
     # アプリケーションの初期化
     app = HyperliquidScraper(
         coin=args.coin,
-        use_s3=args.s3
+        use_s3=args.s3,
+        log_level=args.log_level
     )
     
     # アプリケーションの実行
